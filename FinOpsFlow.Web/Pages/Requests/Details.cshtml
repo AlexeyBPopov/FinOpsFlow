@@ -1,0 +1,117 @@
+﻿@page "{id:int}"
+@model FinOpsFlow.Web.Pages.Requests.DetailsModel
+@using FinOpsFlow.Core.Enums
+@using FinOpsFlow.Web.Helpers
+@{
+    ViewData["Title"] = $"Request #{Model.RequestDetail.Id}";
+    var canManage = User.IsInRole("Admin") || User.IsInRole("Manager");
+}
+
+@if (TempData["Success"] is string msg)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @msg <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2>@Model.RequestDetail.Title</h2>
+        <span class="text-muted">
+            Request #@Model.RequestDetail.Id &bull; Created by @Model.RequestDetail.CreatedBy.FullName
+            on @Model.RequestDetail.CreatedAt.ToString("dd MMM yyyy HH:mm")
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        @if (canManage)
+        {
+            <a asp-page="./Edit" asp-route-id="@Model.RequestDetail.Id" class="btn btn-outline-secondary">Edit</a>
+        }
+        <a asp-page="./Index" class="btn btn-outline-secondary">← Back</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-subtitle text-muted mb-2">Description</h6>
+                <p class="card-text" style="white-space: pre-wrap">@Model.RequestDetail.Description</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">Audit Trail</div>
+            <ul class="list-group list-group-flush">
+                @foreach (var log in Model.RequestDetail.AuditLogs.OrderByDescending(l => l.Timestamp))
+                {
+                    <li class="list-group-item small">
+                        <strong>@log.User.FullName</strong>
+                        @log.Action.ToString().ToLower()
+                        @if (log.OldValue is not null)
+                        {
+                            <span>: <del class="text-muted">@log.OldValue</del> → <strong>@log.NewValue</strong></span>
+                        }
+                        <span class="text-muted float-end">@log.Timestamp.ToString("dd MMM yyyy HH:mm")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Status</dt>
+                    <dd class="col-7">
+                        <span class="badge @BadgeHelper.StatusBadge(Model.RequestDetail.Status)">
+                            @Model.RequestDetail.Status
+                        </span>
+                    </dd>
+                    <dt class="col-5">Priority</dt>
+                    <dd class="col-7">
+                        <span class="badge @BadgeHelper.PriorityBadge(Model.RequestDetail.Priority)">
+                            @Model.RequestDetail.Priority
+                        </span>
+                    </dd>
+                    <dt class="col-5">Category</dt>
+                    <dd class="col-7">@Model.RequestDetail.Category.Name</dd>
+                    <dt class="col-5">Assigned To</dt>
+                    <dd class="col-7">@(Model.RequestDetail.AssignedTo?.FullName ?? "—")</dd>
+                    <dt class="col-5">Due Date</dt>
+                    <dd class="col-7">@(Model.RequestDetail.DueDate?.ToString("dd MMM yyyy") ?? "—")</dd>
+                </dl>
+            </div>
+        </div>
+
+        @if (canManage)
+        {
+            <div class="card mb-3">
+                <div class="card-header">Change Status</div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="ChangeStatus" asp-route-id="@Model.RequestDetail.Id">
+                        <select asp-for="NewStatus"
+                                asp-items="Model.Statuses"
+                                class="form-select mb-2"></select>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Update Status</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Assign To</div>
+                <div class="card-body">
+                    <form method="post" asp-page-handler="Assign" asp-route-id="@Model.RequestDetail.Id">
+                        <select asp-for="AssignedToId"
+                                asp-items="Model.Users"
+                                class="form-select mb-2">
+                            <option value="">— Unassigned —</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary w-100">Assign</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>
