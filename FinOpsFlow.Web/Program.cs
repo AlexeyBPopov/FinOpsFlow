@@ -1,12 +1,21 @@
 using FinOpsFlow.Core.Entities;
+using FinOpsFlow.Core.Interfaces;
 using FinOpsFlow.Infrastructure.Data;
+using FinOpsFlow.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+
+    if (builder.Environment.IsDevelopment())
+        options.LogTo(Console.WriteLine, LogLevel.Information)
+               .EnableSensitiveDataLogging();
+});
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
@@ -19,6 +28,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddScoped<IRequestService, RequestService>();
 
 var app = builder.Build();
 

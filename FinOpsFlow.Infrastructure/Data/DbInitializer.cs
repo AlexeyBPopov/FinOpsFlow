@@ -54,6 +54,7 @@ public static class DbInitializer
         await CreateUser(userManager, "manager@finopsflow.com", "Manager", "Smith", "Manager123!", "Manager");
         await CreateUser(userManager, "ops@finopsflow.com", "Operations", "Jones", "Ops123!", "OperationsUser");
         await CreateUser(userManager, "auditor@finopsflow.com", "Auditor", "Brown", "Auditor123!", "Auditor");
+        await CreateUser(userManager, "ops@finopsflow.com", "Operations", "Jones", "Ops1234!", "OperationsUser");
     }
 
     private static async Task CreateUser(
