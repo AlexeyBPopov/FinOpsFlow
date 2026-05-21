@@ -23,4 +23,11 @@ public static class BadgeHelper
         RequestPriority.Critical => "bg-dark",
         _ => "bg-secondary"
     };
+
+    public static string FormatFileSize(long bytes) => bytes switch
+    {
+        < 1024 => $"{bytes} B",
+        < 1024 * 1024 => $"{bytes / 1024.0:F1} KB",
+        _ => $"{bytes / (1024.0 * 1024):F1} MB"
+    };
 }
