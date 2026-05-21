@@ -33,6 +33,7 @@ builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

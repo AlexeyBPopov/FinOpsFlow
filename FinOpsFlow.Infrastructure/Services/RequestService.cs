@@ -67,17 +67,7 @@ public class RequestService : IRequestService
         };
 
         _db.Requests.Add(request);
-        await _db.SaveChangesAsync();
-
-        _db.AuditLogs.Add(new AuditLog
-        {
-            RequestId = request.Id,
-            UserId = userId,
-            Action = AuditAction.Created,
-            NewValue = request.Title
-        });
-        await _db.SaveChangesAsync();
-
+        await _db.SaveChangesAsync(); // DbContext auto-logs Created
         return request;
     }
 
@@ -94,16 +84,7 @@ public class RequestService : IRequestService
         request.AssignedToId = string.IsNullOrEmpty(dto.AssignedToId) ? null : dto.AssignedToId;
         request.UpdatedAt = DateTime.UtcNow;
 
-        _db.AuditLogs.Add(new AuditLog
-        {
-            RequestId = id,
-            UserId = userId,
-            Action = AuditAction.FieldUpdated,
-            FieldName = "Request",
-            NewValue = dto.Title
-        });
-
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(); // DbContext auto-logs field changes
     }
 
     public async Task ChangeStatusAsync(int id, RequestStatus newStatus, string userId)
@@ -111,23 +92,12 @@ public class RequestService : IRequestService
         var request = await _db.Requests.FindAsync(id)
             ?? throw new KeyNotFoundException($"Request {id} not found");
 
-        var oldStatus = request.Status;
         request.Status = newStatus;
         request.UpdatedAt = DateTime.UtcNow;
 
         if (newStatus is RequestStatus.Completed or RequestStatus.Rejected)
             request.ClosedAt = DateTime.UtcNow;
 
-        _db.AuditLogs.Add(new AuditLog
-        {
-            RequestId = id,
-            UserId = userId,
-            Action = AuditAction.StatusChanged,
-            FieldName = "Status",
-            OldValue = oldStatus.ToString(),
-            NewValue = newStatus.ToString()
-        });
-
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(); // DbContext auto-logs StatusChanged
     }
 }
