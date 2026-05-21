@@ -1,0 +1,123 @@
+﻿@page
+@model FinOpsFlow.Web.Pages.Admin.AuditLogModel
+@using FinOpsFlow.Core.Enums
+@{
+    ViewData["Title"] = "Audit Log";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Audit Log</h2>
+    <span class="text-muted">@Model.TotalCount entries</span>
+</div>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-md-2">
+        <input asp-for="RequestIdFilter" class="form-control" placeholder="Request #" type="number" />
+    </div>
+    <div class="col-md-2">
+        <select asp-for="ActionFilter" asp-items="Model.Actions" class="form-select">
+            <option value="">All Actions</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select asp-for="UserFilter" asp-items="Model.Users" class="form-select">
+            <option value="">All Users</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input asp-for="DateFrom" class="form-control" type="date" placeholder="From" />
+    </div>
+    <div class="col-md-2">
+        <input asp-for="DateTo" class="form-control" type="date" placeholder="To" />
+    </div>
+    <div class="col-md-1 d-flex gap-1">
+        <button type="submit" class="btn btn-outline-secondary">Filter</button>
+    </div>
+    <div class="col-auto">
+        <a asp-page="./AuditLog" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+@if (!Model.Logs.Any())
+{
+    <div class="alert alert-info">No audit records found.</div>
+}
+else
+{
+    <table class="table table-sm table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Timestamp</th>
+                <th>Request</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Field</th>
+                <th>Old Value</th>
+                <th>New Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model.Logs)
+            {
+                <tr>
+                    <td class="text-nowrap text-muted small">
+                        @log.Timestamp.ToString("dd MMM yyyy HH:mm")
+                    </td>
+                    <td>
+                        <a asp-page="/Requests/Details" asp-route-id="@log.RequestId">
+                            #@log.RequestId
+                        </a>
+                        <small class="text-muted d-block">@log.Request?.Title</small>
+                    </td>
+                    <td class="small">@log.User?.FullName</td>
+                    <td>
+                        <span class="badge @ActionBadge(log.Action)">@log.Action</span>
+                    </td>
+                    <td class="text-muted small">@log.FieldName</td>
+                    <td class="small">
+                        @if (log.OldValue is not null)
+                        {
+                            <del class="text-muted">@log.OldValue</del>
+                        }
+                    </td>
+                    <td class="small">@log.NewValue</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination pagination-sm">
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-page="./AuditLog"
+                           asp-all-route-data="@(new Dictionary<string, string?>
+                           {
+                               ["currentPage"] = i.ToString(),
+                               ["actionFilter"] = Model.ActionFilter?.ToString(),
+                               ["userFilter"] = Model.UserFilter,
+                               ["requestIdFilter"] = Model.RequestIdFilter?.ToString(),
+                               ["dateFrom"] = Model.DateFrom?.ToString("yyyy-MM-dd"),
+                               ["dateTo"] = Model.DateTo?.ToString("yyyy-MM-dd")
+                           })">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+    }
+}
+
+@functions {
+    static string ActionBadge(AuditAction action) => action switch
+    {
+        AuditAction.Created => "bg-success",
+        AuditAction.StatusChanged => "bg-info text-dark",
+        AuditAction.CommentAdded => "bg-secondary",
+        AuditAction.AttachmentAdded => "bg-secondary",
+        AuditAction.Deleted => "bg-danger",
+        _ => "bg-warning text-dark"
+    };
+}
