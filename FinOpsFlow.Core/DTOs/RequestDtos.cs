@@ -22,5 +22,10 @@ public record UpdateRequestDto(
 public record RequestFilterDto(
     RequestStatus? Status = null,
     RequestPriority? Priority = null,
-    string? Keyword = null
+    string? Keyword = null,
+    string? AssignedToId = null,
+    int? CategoryId = null,
+    DateTime? CreatedFrom = null,
+    DateTime? CreatedTo = null,
+    bool OverdueOnly = false
 );

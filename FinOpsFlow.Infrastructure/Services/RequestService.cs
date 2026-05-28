@@ -36,6 +36,25 @@ public class RequestService : IRequestService
                 query = query.Where(r =>
                     r.Title.Contains(filter.Keyword) ||
                     r.Description.Contains(filter.Keyword));
+
+            if (!string.IsNullOrWhiteSpace(filter.AssignedToId))
+                query = query.Where(r => r.AssignedToId == filter.AssignedToId);
+
+            if (filter.CategoryId.HasValue)
+                query = query.Where(r => r.CategoryId == filter.CategoryId.Value);
+
+            if (filter.CreatedFrom.HasValue)
+                query = query.Where(r => r.CreatedAt >= filter.CreatedFrom.Value);
+
+            if (filter.CreatedTo.HasValue)
+                query = query.Where(r => r.CreatedAt < filter.CreatedTo.Value.AddDays(1));
+
+            if (filter.OverdueOnly)
+                query = query.Where(r =>
+                    r.DueDate.HasValue &&
+                    r.DueDate < DateTime.UtcNow &&
+                    r.Status != RequestStatus.Completed &&
+                    r.Status != RequestStatus.Rejected);
         }
 
         return await query.OrderByDescending(r => r.CreatedAt).ToListAsync();
