@@ -1,19 +1,27 @@
-using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using FinOpsFlow.Core.DTOs;
+using FinOpsFlow.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace FinOpsFlow.Web.Pages;
 
+[Authorize]
 public class IndexModel : PageModel
 {
-    private readonly ILogger<IndexModel> _logger;
+    private readonly IDashboardService _dashboardService;
 
-    public IndexModel(ILogger<IndexModel> logger)
+    public IndexModel(IDashboardService dashboardService)
     {
-        _logger = logger;
+        _dashboardService = dashboardService;
     }
 
-    public void OnGet()
-    {
+    public DashboardDto Dashboard { get; set; } = null!;
 
+    public async Task OnGetAsync()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var isManager = User.IsInRole("Admin") || User.IsInRole("Manager");
+        Dashboard = await _dashboardService.GetAsync(userId, isManager);
     }
 }
