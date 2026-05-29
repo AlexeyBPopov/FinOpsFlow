@@ -30,9 +30,7 @@ jobs:
         run: dotnet build --no-restore --configuration Release
 
       - name: Publish
-        run: dotnet publish FinOpsFlow.Web/FinOpsFlow.Web.csproj \
-               --configuration Release \
-               --output ${{ env.PUBLISH_PATH }}
+        run: dotnet publish FinOpsFlow.Web/FinOpsFlow.Web.csproj --configuration Release --output ${{ env.PUBLISH_PATH }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
