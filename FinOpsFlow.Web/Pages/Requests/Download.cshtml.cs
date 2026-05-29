@@ -9,12 +9,12 @@ namespace FinOpsFlow.Web.Pages.Requests;
 public class DownloadModel : PageModel
 {
     private readonly IAttachmentService _attachmentService;
-    private readonly IWebHostEnvironment _env;
+    private readonly IFileStorageService _fileStorage;
 
-    public DownloadModel(IAttachmentService attachmentService, IWebHostEnvironment env)
+    public DownloadModel(IAttachmentService attachmentService, IFileStorageService fileStorage)
     {
         _attachmentService = attachmentService;
-        _env = env;
+        _fileStorage = fileStorage;
     }
 
     public async Task<IActionResult> OnGetAsync(int id)
@@ -22,13 +22,7 @@ public class DownloadModel : PageModel
         var attachment = await _attachmentService.GetByIdAsync(id);
         if (attachment is null) return NotFound();
 
-        var fullPath = Path.Combine(
-            _env.WebRootPath,
-            attachment.StoragePath.Replace('/', Path.DirectorySeparatorChar));
-
-        if (!System.IO.File.Exists(fullPath)) return NotFound();
-
-        var stream = System.IO.File.OpenRead(fullPath);
+        var stream = await _fileStorage.GetStreamAsync(attachment.StoragePath);
         return File(stream, attachment.ContentType, attachment.FileName);
     }
 }

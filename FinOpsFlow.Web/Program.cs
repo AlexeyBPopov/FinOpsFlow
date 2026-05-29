@@ -32,7 +32,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+var blobConnection = builder.Configuration.GetConnectionString("AzureBlobStorage");
+if (!string.IsNullOrWhiteSpace(blobConnection))
+    builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+else
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddHttpContextAccessor();
 
