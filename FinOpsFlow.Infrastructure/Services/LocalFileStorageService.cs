@@ -27,6 +27,15 @@ public class LocalFileStorageService : IFileStorageService
         return $"uploads/{subfolder}/{storedName}";
     }
 
+    public Task<Stream> GetStreamAsync(string storagePath)
+    {
+        var fullPath = Path.Combine(
+            _webRootPath,
+            storagePath.Replace('/', Path.DirectorySeparatorChar));
+
+        return Task.FromResult<Stream>(File.OpenRead(fullPath));
+    }
+
     public void Delete(string relativePath)
     {
         var fullPath = Path.Combine(_webRootPath, relativePath.Replace('/', Path.DirectorySeparatorChar));

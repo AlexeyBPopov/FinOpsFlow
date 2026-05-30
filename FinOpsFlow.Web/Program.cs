@@ -10,7 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null));
 
     if (builder.Environment.IsDevelopment())
         options.LogTo(Console.WriteLine, LogLevel.Information)
@@ -32,7 +37,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<IRequestService, RequestService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IAttachmentService, AttachmentService>();
-builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+var blobConnection = builder.Configuration.GetConnectionString("AzureBlobStorage");
+if (!string.IsNullOrWhiteSpace(blobConnection))
+    builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+else
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddHttpContextAccessor();
 

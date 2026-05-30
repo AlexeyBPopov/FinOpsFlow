@@ -1,4 +1,17 @@
-﻿<form method="get" class="card card-body mb-4">
+﻿@page
+@model FinOpsFlow.Web.Pages.Requests.IndexModel
+@using FinOpsFlow.Core.Enums
+@using FinOpsFlow.Web.Helpers
+@{
+    ViewData["Title"] = "Requests";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Requests</h2>
+    <a asp-page="./Create" class="btn btn-primary">+ New Request</a>
+</div>
+
+<form method="get" class="card card-body mb-4">
     <div class="row g-2">
         <div class="col-md-4">
             <input name="Keyword" value="@Model.Keyword"
@@ -53,3 +66,45 @@
         </div>
     </div>
 </form>
+
+@if (!Model.Requests.Any())
+{
+    <div class="alert alert-info">No requests found.</div>
+}
+else
+{
+    <table class="table table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Assigned To</th>
+                <th>Due Date</th>
+                <th>Created</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Requests)
+            {
+                <tr>
+                    <td class="text-muted">@r.Id</td>
+                    <td><a asp-page="./Details" asp-route-id="@r.Id">@r.Title</a></td>
+                    <td>@r.Category.Name</td>
+                    <td><span class="badge @BadgeHelper.StatusBadge(r.Status)">@r.Status</span></td>
+                    <td><span class="badge @BadgeHelper.PriorityBadge(r.Priority)">@r.Priority</span></td>
+                    <td>@(r.AssignedTo?.FullName ?? "—")</td>
+                    <td>@(r.DueDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                    <td>@r.CreatedAt.ToString("dd MMM yyyy")</td>
+                    <td>
+                        <a asp-page="./Details" asp-route-id="@r.Id"
+                           class="btn btn-sm btn-outline-primary">View</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

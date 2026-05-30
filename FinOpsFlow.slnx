@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".dockerignore" />
+    <File Path="Dockerfile" />
+  </Folder>
   <Project Path="FinOpsFlow.Core/FinOpsFlow.Core.csproj" />
   <Project Path="FinOpsFlow.Infrastructure/FinOpsFlow.Infrastructure.csproj" />
   <Project Path="FinOpsFlow.Web/FinOpsFlow.Web.csproj" />
